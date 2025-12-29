@@ -1,9 +1,11 @@
+import os
 from pathlib import Path
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "1c&d2xfom)b=85b-$z%@o)*m+p*q58g&8gx08#+fwv_d05%(vd"
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "TRUE"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
@@ -44,12 +46,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "comforterslodge.wsgi.application"
 ASGI_APPLICATION = "comforterslodge.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DEBUG:
+    # Production / cloud database (PostgreSQL)
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
-}
+else:
+    # Local development fallback
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Europe/London"
