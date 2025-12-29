@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
 import dj_database_url
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "1c&d2xfom)b=85b-$z%@o)*m+p*q58g&8gx08#+fwv_d05%(vd"
-DEBUG = os.getenv("DEBUG") == "TRUE"
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG") == "True"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
@@ -46,8 +47,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "comforterslodge.wsgi.application"
 ASGI_APPLICATION = "comforterslodge.asgi.application"
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
+DATABASE_URL = config("DATABASE_URL")
 if not DEBUG:
     # Production / cloud database (PostgreSQL)
     DATABASES = {
