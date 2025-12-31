@@ -12,7 +12,7 @@ from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import DailyPost, DailyDevotion
 from .schemas import DailyPostOut, DailyDevotionOut
@@ -22,6 +22,22 @@ from asgiref.sync import sync_to_async
 
 
 api = FastAPI(title="Comforters Lodge API")
+# ----------------------------------------
+# CORS
+# ----------------------------------------
+# Allow React dev server (Vite) to call the API during development.
+# TODO: Allow live domain to call the API
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],   # GET, POST, DELETE, etc.
+    allow_headers=["*"],   # Authorization, Content-Type, etc.
+)
+
 
 
 # -------------------------
