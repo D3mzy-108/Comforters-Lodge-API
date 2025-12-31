@@ -191,7 +191,7 @@ async def create_post(
             story=story.strip(),
             prayer=prayer.strip(),
             activity_guide=activity_guide.strip(),
-            date_posted=date_posted or timezone.localdate,
+            date_posted=date_posted or timezone.localdate(),
         )
 
     p = await sync_to_async(_create_single_post, thread_sensitive=True)()
@@ -265,7 +265,7 @@ async def create_devotion(
         d = DailyDevotion.objects.create(
             citation=citation.strip(),
             verse_content=verse_content.strip(),
-            date_posted=date_posted or timezone.localdate,
+            date_posted=date_posted or timezone.localdate(),
         )
         # d.cover_image.save(filename, ContentFile(img_bytes), save=True)
         return d
