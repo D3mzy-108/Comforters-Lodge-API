@@ -27,12 +27,14 @@ api = FastAPI(title="Comforters Lodge API")
 # CORS
 # ----------------------------------------
 # Allow React dev server (Vite) to call the API during development.
-# TODO: Allow live domain to call the API
+# Allows live domain to call the API
 api.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://cm.clm.org.ng",
+        "https://www.cm.clm.org.ng",
     ],
     allow_credentials=True,
     allow_methods=["*"],   # GET, POST, DELETE, etc.
