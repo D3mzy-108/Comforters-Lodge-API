@@ -35,6 +35,8 @@ api.add_middleware(
         "http://127.0.0.1:5173",
         "https://cm.clm.org.ng",
         "https://www.cm.clm.org.ng",
+        "https://clm.org.ng",
+        "https://www.clm.org.ng",
     ],
     allow_credentials=True,
     allow_methods=["*"],   # GET, POST, DELETE, etc.
