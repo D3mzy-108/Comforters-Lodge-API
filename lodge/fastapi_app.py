@@ -50,8 +50,10 @@ api.add_middleware(
 def post_to_out(p: DailyPost) -> DailyPostOut:
     return DailyPostOut(
         id=p.id,
-        opening_hook=p.opening_hook,
+        series_title=p.series_title,
         personal_question=p.personal_question,
+        theme=p.theme,
+        opening_hook=p.opening_hook,
         biblical_qa=p.biblical_qa,
         reflection=p.reflection,
         story=p.story,
@@ -112,8 +114,10 @@ def delete_post(post_id: int):
 @api.post("/posts", response_model=List[DailyPostOut])
 async def create_post(
     # SINGLE POST FIELDS (multipart form fields)
-    opening_hook: Optional[str] = Form(default=None),
+    series_title: Optional[str] = Form(default=None),
     personal_question: Optional[str] = Form(default=None),
+    theme: Optional[str] = Form(default=None),
+    opening_hook: Optional[str] = Form(default=None),
     biblical_qa: Optional[str] = Form(default=None),
     reflection: Optional[str] = Form(default=None),
     story: Optional[str] = Form(default=None),
@@ -149,8 +153,10 @@ async def create_post(
                 for r in rows:
                     created.append(
                         DailyPost.objects.create(
-                            opening_hook=r["opening_hook"].strip(),
+                            series_title=r["series_title"].strip(),
                             personal_question=r["personal_question"].strip(),
+                            theme=r['theme'].strip(),
+                            opening_hook=r["opening_hook"].strip(),
                             biblical_qa=r["biblical_qa"].strip(),
                             reflection=r["reflection"].strip(),
                             story=r["story"].strip(),
@@ -168,13 +174,15 @@ async def create_post(
     # Mode 1: Single create
     # --------------------------
     required = {
-        "opening_hook": opening_hook,
-        "personal_question": personal_question,
-        "biblical_qa": biblical_qa,
-        "reflection": reflection,
-        "story": story,
-        "prayer": prayer,
-        "activity_guide": activity_guide,
+        'series_title': series_title,
+        'personal_question': personal_question,
+        'theme': theme,
+        'opening_hook': opening_hook,
+        'biblical_qa': biblical_qa,
+        'reflection': reflection,
+        'story': story,
+        'prayer': prayer,
+        'activity_guide': activity_guide,
     }
     missing = [k for k, v in required.items() if v is None or str(v).strip() == ""]
     if missing:
@@ -186,8 +194,10 @@ async def create_post(
 
     def _create_single_post():
         return DailyPost.objects.create(
-            opening_hook=opening_hook.strip(),
+            series_title=series_title.strip(),
             personal_question=personal_question.strip(),
+            theme=theme.strip(),
+            opening_hook=opening_hook.strip(),
             biblical_qa=biblical_qa.strip(),
             reflection=reflection.strip(),
             story=story.strip(),

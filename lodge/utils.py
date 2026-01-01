@@ -5,8 +5,10 @@ from datetime import date
 from typing import Any, Dict, List, Optional
 
 REQUIRED_TSV_COLUMNS = [
-    "opening_hook",
+    "series_title",
     "personal_question",
+    "theme",
+    "opening_hook",
     "biblical_qa",
     "reflection",
     "story",
