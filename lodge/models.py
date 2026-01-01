@@ -2,8 +2,10 @@ from django.db import models
 from django.utils import timezone
 
 class DailyPost(models.Model):
-    opening_hook = models.CharField(max_length=280)
+    series_title = models.CharField(max_length=280, default='No Title')
     personal_question = models.TextField()
+    theme = models.TextField(default='No Theme')
+    opening_hook = models.CharField(max_length=280)
     biblical_qa = models.TextField()
     reflection = models.TextField()
     story = models.TextField()

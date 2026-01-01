@@ -3,8 +3,10 @@ from pydantic import BaseModel
 
 class DailyPostOut(BaseModel):
     id: int
-    opening_hook: str
+    series_title: str
     personal_question: str
+    theme: str
+    opening_hook: str
     biblical_qa: str
     reflection: str
     story: str
