@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from math import ceil
 
 import django
 from django.utils import timezone
 django.setup()  # Ensures Django is initialized when FastAPI imports models.
 
 from django.db import transaction
-from django.core.files.base import ContentFile
+# from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 
@@ -19,6 +20,7 @@ from .models import DailyPost, DailyDevotion
 from .schemas import DailyPostOut, DailyDevotionOut
 from .utils import parse_tsv_bytes
 from asgiref.sync import sync_to_async
+from fastapi import Query
 
 
 
@@ -81,15 +83,37 @@ def devotion_to_out(d: DailyDevotion) -> DailyDevotionOut:
 # Endpoints: DailyPost
 # -------------------------
 
-@api.get("/posts", response_model=List[DailyPostOut])
-def list_posts():
+@api.get("/posts")
+def list_posts(page: int = Query(1, ge=1)) -> Dict[str, Any]:
     """
-    Fetch all daily posts from newest to oldest.
+    Fetch daily posts from newest to oldest with pagination.
 
-    Ordering is handled by the model Meta.ordering:
-      -date_posted, -created_at
+    Returns:
+      - posts: 7 items per page
+      - page: current page number
+      - total_pages: total pages available
+
+    Notes:
+      - We use Django slicing for pagination: queryset[offset:offset+limit]
+      - Ordering is handled by the model Meta.ordering.
     """
-    return [post_to_out(p) for p in DailyPost.objects.all()]
+    page_size = 7
+
+    qs = DailyPost.objects.all()
+    total_count = qs.count()
+
+    # If there are no posts, keep total_pages at 0 and return an empty list.
+    total_pages = ceil(total_count / page_size) if total_count > 0 else 0
+
+    # If client requests a page beyond total_pages, return empty posts (or raise 404 if you prefer).
+    offset = (page - 1) * page_size
+    page_items = qs[offset : offset + page_size]
+
+    return {
+        "posts": [post_to_out(p) for p in page_items],
+        "page": page,
+        "total_pages": total_pages,
+    }
 
 
 @api.get("/posts/{post_id}", response_model=DailyPostOut)
