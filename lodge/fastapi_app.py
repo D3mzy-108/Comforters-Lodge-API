@@ -85,19 +85,7 @@ def devotion_to_out(d: DailyDevotion) -> DailyDevotionOut:
 
 @api.get("/posts")
 def list_posts(page: int = Query(1, ge=1)) -> Dict[str, Any]:
-    """
-    Fetch daily posts from newest to oldest with pagination.
-
-    Returns:
-      - posts: 7 items per page
-      - page: current page number
-      - total_pages: total pages available
-
-    Notes:
-      - We use Django slicing for pagination: queryset[offset:offset+limit]
-      - Ordering is handled by the model Meta.ordering.
-    """
-    page_size = 7
+    page_size = 10
 
     qs = DailyPost.objects.all()
     total_count = qs.count()
@@ -113,6 +101,34 @@ def list_posts(page: int = Query(1, ge=1)) -> Dict[str, Any]:
         "posts": [post_to_out(p) for p in page_items],
         "page": page,
         "total_pages": total_pages,
+    }
+
+@api.get("/posts/daily-lessons")
+def daily_lesson_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
+    page_size = 7
+    today = timezone.localdate()  # safer than timezone.now().date()
+
+    # Most recent 7 posts from today backwards
+    posts_qs = (
+        DailyPost.objects
+        .filter(date_posted__lte=today)
+        .order_by("-date_posted", "-id")
+    )
+
+    offset = (page - 1) * page_size
+    page_items = posts_qs[offset: offset + page_size]
+
+    # Next scheduled post after today
+    up_next_obj = (
+        DailyPost.objects
+        .filter(date_posted__gt=today)
+        .order_by("date_posted", "id")
+        .first()
+    )
+
+    return {
+        "posts": [post_to_out(p) for p in page_items],
+        "up_next": post_to_out(up_next_obj) if up_next_obj else None,
     }
 
 
