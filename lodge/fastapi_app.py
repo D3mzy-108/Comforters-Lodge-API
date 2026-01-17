@@ -105,7 +105,7 @@ def list_posts(page: int = Query(1, ge=1)) -> Dict[str, Any]:
 
 @api.get("/posts/daily-lessons")
 def daily_lesson_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
-    page_size = 7
+    page_size = 12
     today = timezone.localdate()  # safer than timezone.now().date()
 
     # Most recent 7 posts from today backwards
@@ -128,6 +128,7 @@ def daily_lesson_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
 
     return {
         "posts": [post_to_out(p) for p in page_items],
+        "page": page,
         "up_next": post_to_out(up_next_obj) if up_next_obj else None,
     }
 
