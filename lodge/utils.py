@@ -205,12 +205,12 @@ def parse_tsv_bytes(tsv_bytes: bytes, tsv_content_type: str) -> ParseResult:
         for line_no, raw in enumerate(reader, start=2):
             row = _strip_row(raw)
             _require_non_empty(row, HYMN_BASE_COLUMNS, line_no)
-            _parse_date(row, line_no)
 
             base_row, verses = _extract_verses(row, fieldnames)
 
             if not verses:
-                raise ValueError(f"Row {line_no}: at least one verse is required.")
+                raise ValueError(
+                    f"Row {line_no}: at least one verse is required.")
 
             items.append({"hymn": base_row, "verses": verses})
 
@@ -223,7 +223,8 @@ def parse_tsv_bytes(tsv_bytes: bytes, tsv_content_type: str) -> ParseResult:
     try:
         required = REQUIRED_COLUMNS_BY_TYPE[tsv_content_type]
     except KeyError:
-        raise ValueError("Invalid content type was provided. Use: LESSON, DEVOTIONAL, or HYMN.")
+        raise ValueError(
+            "Invalid content type was provided. Use: LESSON, DEVOTIONAL, or HYMN.")
 
     _require_header(fieldnames, required)
 
