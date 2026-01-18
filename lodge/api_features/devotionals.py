@@ -6,7 +6,6 @@ from math import ceil
 
 import django
 from django.utils import timezone
-django.setup()  # Ensures Django is initialized when FastAPI imports models.
 
 from django.db import transaction
 # from django.core.files.base import ContentFile
@@ -56,7 +55,7 @@ def _list_devotions(page: int):
 
     # If client requests a page beyond total_pages, return empty posts (or raise 404 if you prefer).
     offset = (page - 1) * page_size
-    page_items = qs[offset : offset + page_size]
+    page_items = qs[offset: offset + page_size]
 
     return {
         "devotionals": [devotion_to_out(p) for p in page_items],
@@ -76,10 +75,10 @@ def _daily_devotions(page: int):
         .filter(date_posted__lte=today)
         .order_by("-date_posted", "-id")
     )
-    
+
     offset = (page - 1) * page_size
     page_items = devotions[offset: offset + page_size]
-    
+
     return {
         "devotionals": [devotion_to_out(p) for p in page_items],
         "page": page,
@@ -137,10 +136,12 @@ async def _create_devotion(
     if tsv_file is not None:
         raw = await tsv_file.read()
         if not raw:
-            raise HTTPException(status_code=400, detail="tsv_file upload is empty")
+            raise HTTPException(
+                status_code=400, detail="tsv_file upload is empty")
 
         try:
-            rows = parse_tsv_bytes(raw, "DEVOTIONAL")  # returns List[Dict[str, Any]]
+            # returns List[Dict[str, Any]]
+            rows = parse_tsv_bytes(raw, "DEVOTIONAL")
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
@@ -152,7 +153,8 @@ async def _create_devotion(
                         DailyDevotion.objects.create(
                             citation=r["citation"].strip(),
                             verse_content=r["verse_content"].strip(),
-                            date_posted=r["date_posted"],  # already parsed to date
+                            # already parsed to date
+                            date_posted=r["date_posted"],
                         )
                     )
             return created
@@ -167,7 +169,8 @@ async def _create_devotion(
         "citation": citation,
         "verse_content": verse_content,
     }
-    missing = [k for k, v in required.items() if v is None or str(v).strip() == ""]
+    missing = [k for k, v in required.items(
+    ) if v is None or str(v).strip() == ""]
     if missing:
         raise HTTPException(
             status_code=400,

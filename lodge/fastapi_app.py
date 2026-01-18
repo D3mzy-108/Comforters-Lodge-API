@@ -11,9 +11,10 @@ import django
 
 from lodge.api_features.devotionals import (
     _create_devotion, _daily_devotions, _delete_devotion, _get_devotion, _list_devotions)
+from lodge.api_features.hymns import _create_hymn, _delete_hymn, _get_hymn, _grouped_hymn_list, _hymns_list
 from lodge.api_features.lessons import (
     _create_post, _daily_lesson_list, _delete_post, _get_post, _list_posts)
-from lodge.schemas import DailyPostOut, DailyDevotionOut
+from lodge.schemas import DailyPostOut, DailyDevotionOut, HymnOut
 django.setup()
 
 
@@ -41,7 +42,9 @@ api.add_middleware(
 )
 
 
+# -----------------------------
 # LESSON ENDPOINTS
+# -----------------------------
 @api.get("/posts")
 def list_posts(page: int = Query(1, ge=1)) -> Dict[str, Any]:
     return _list_posts(page)
@@ -93,7 +96,9 @@ async def create_post(
     )
 
 
+# -----------------------------
 # DEVOTIONAL ENDPOINTS
+# -----------------------------
 @api.get("/devotions")
 def list_devotions(page: int = Query(1, ge=1)):
     return _list_devotions(page)
@@ -128,5 +133,59 @@ async def create_devotion(
         citation=citation,
         verse_content=verse_content,
         date_posted=date_posted,
+        tsv_file=tsv_file,
+    )
+
+# -----------------------------
+# HYMN ENDPOINTS
+# -----------------------------
+
+
+@api.get("/hymns", response_model=Dict[str, Any])
+def hymns_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
+    return _hymns_list(page)
+
+
+@api.get("/hymns/grouped", response_model=List[List[HymnOut]])
+def grouped_hymn_list() -> List[List[HymnOut]]:
+    return _grouped_hymn_list()
+
+
+@api.get("/hymns/{hymn_id}", response_model=HymnOut)
+def get_hymn(hymn_id: int) -> HymnOut:
+    return _get_hymn(hymn_id)
+
+
+@api.delete("/hymns/{hymn_id}", response_model=Dict[str, Any])
+def delete_hymn(hymn_id: int) -> Dict[str, Any]:
+    return _delete_hymn(hymn_id)
+
+
+@api.post("/hymns", response_model=List[HymnOut])
+async def create_hymn(
+    # SINGLE HYMN FIELDS
+    hymn_number: Optional[int] = Form(default=None),
+    hymn_title: Optional[str] = Form(default=None),
+    classification: Optional[str] = Form(default=None),
+    tune_ref: Optional[str] = Form(default=None),
+    cross_ref: Optional[str] = Form(default=None),
+    scripture: Optional[str] = Form(default=None),
+    chorus_title: Optional[str] = Form(default=None),
+    chorus: Optional[str] = Form(default=None),
+    verses: Optional[List[str]] = Form(default=None),
+
+    # BULK TSV UPLOAD
+    tsv_file: Optional[UploadFile] = File(default=None),
+) -> List[HymnOut]:
+    return await _create_hymn(
+        hymn_number=hymn_number,
+        hymn_title=hymn_title,
+        classification=classification,
+        tune_ref=tune_ref,
+        cross_ref=cross_ref,
+        scripture=scripture,
+        chorus_title=chorus_title,
+        chorus=chorus,
+        verses=verses,
         tsv_file=tsv_file,
     )

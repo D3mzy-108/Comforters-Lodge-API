@@ -6,7 +6,6 @@ from math import ceil
 
 import django
 from django.utils import timezone
-django.setup()  # Ensures Django is initialized when FastAPI imports models.
 
 from django.db import transaction
 # from django.core.files.base import ContentFile
@@ -22,6 +21,7 @@ from asgiref.sync import sync_to_async
 # -------------------------
 # Helpers (serialization)
 # -------------------------
+
 
 def post_to_out(p: DailyPost) -> DailyPostOut:
     return DailyPostOut(
@@ -54,13 +54,14 @@ def _list_posts(page: int) -> Dict[str, Any]:
 
     # If client requests a page beyond total_pages, return empty posts (or raise 404 if you prefer).
     offset = (page - 1) * page_size
-    page_items = qs[offset : offset + page_size]
+    page_items = qs[offset: offset + page_size]
 
     return {
         "posts": [post_to_out(p) for p in page_items],
         "page": page,
         "total_pages": total_pages,
     }
+
 
 def _daily_lesson_list(page: int) -> Dict[str, Any]:
     page_size = 12
@@ -89,6 +90,7 @@ def _daily_lesson_list(page: int) -> Dict[str, Any]:
         "page": page,
         "up_next": post_to_out(up_next_obj) if up_next_obj else None,
     }
+
 
 def _get_post(post_id: int):
     """
@@ -181,7 +183,8 @@ async def _create_post(
         'prayer': prayer,
         'activity_guide': activity_guide,
     }
-    missing = [k for k, v in required.items() if v is None or str(v).strip() == ""]
+    missing = [k for k, v in required.items(
+    ) if v is None or str(v).strip() == ""]
     if missing:
         raise HTTPException(
             status_code=400,

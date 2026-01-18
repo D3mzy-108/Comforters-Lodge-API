@@ -34,7 +34,6 @@ HYMN_BASE_COLUMNS = [
     "scripture",
     "chorus_title",
     "chorus",
-    "date_posted",
 ]
 
 VERSE_PREFIX = "verse_"
