@@ -103,8 +103,8 @@ def _delete_devotion(devotion_id: int):
 
     # Optional cleanup: remove file from storage when deleting record.
     # This prevents orphaned files in MEDIA_ROOT.
-    if d.cover_image and default_storage.exists(d.cover_image.name):
-        default_storage.delete(d.cover_image.name)
+    # if d.cover_image and default_storage.exists(d.cover_image.name):
+    #     default_storage.delete(d.cover_image.name)
 
     d.delete()
     return {"deleted": True, "id": devotion_id}
