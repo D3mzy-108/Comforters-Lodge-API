@@ -44,7 +44,7 @@ def _hymns_list(page: int) -> Dict[str, Any]:
     offset = (page - 1) * PAGE_SIZE
 
     total = Hymn.objects.count()
-    hymns = Hymn.objects.order_by("hymn_number")[offset: offset + PAGE_SIZE]
+    hymns = Hymn.objects.order_by("-hymn_number")[offset: offset + PAGE_SIZE]
 
     return {
         "hymns": [hymn_to_out(h) for h in hymns],
