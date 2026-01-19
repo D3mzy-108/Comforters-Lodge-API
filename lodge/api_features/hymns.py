@@ -187,3 +187,14 @@ async def _create_hymn(
 
     hymn = await sync_to_async(_create_single, thread_sensitive=True)()
     return [hymn_to_out(hymn)]
+
+
+def _edit_hymn(hymn_id: int, **update_data) -> List[HymnOut]:
+    hymn = Hymn.objects.filter(id=hymn_id).first()
+    if not hymn:
+        raise HTTPException(status_code=404, detail="Hymn not found.")
+
+    for field, value in update_data.items():
+        setattr(hymn, field, value)
+    hymn.save()
+    return [hymn_to_out(hymn)]

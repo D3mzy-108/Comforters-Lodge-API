@@ -208,3 +208,18 @@ async def _create_post(
 
     p = await sync_to_async(_create_single_post, thread_sensitive=True)()
     return [post_to_out(p)]
+
+
+def _edit_post(
+    post_id: int,
+    # SINGLE POST FIELDS (multipart form fields)
+    **update_data
+):
+    p = DailyPost.objects.filter(id=post_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    for field, value in update_data.items():
+        setattr(p, field, value)
+    p.save()
+    return [post_to_out(p)]

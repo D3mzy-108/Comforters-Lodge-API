@@ -189,3 +189,17 @@ async def _create_devotion(
 
     d = await sync_to_async(_create_single_devotion, thread_sensitive=True)()
     return [devotion_to_out(d)]
+
+
+def _edit_devotion(
+    devotion_id: int,
+    **update_data,
+):
+    d = DailyDevotion.objects.filter(id=devotion_id).first()
+    if not d:
+        raise HTTPException(status_code=404, detail="Devotional not found")
+
+    for field, value in update_data.items():
+        setattr(d, field, value)
+    d.save()
+    return [devotion_to_out(d)]
