@@ -113,6 +113,11 @@ def _parse_date(row: Dict[str, Any], line_no: int) -> None:
         raise ValueError(f"Row {line_no}: date_posted must be YYYY-MM-DD.")
 
 
+def _unescape_newlines(s: str) -> str:
+    # Convert literal backslash-n sequences into real newlines
+    return s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\r", "\n").replace("\\t", "\t")
+
+
 def _extract_verses(
     row: Dict[str, Any],
     fieldnames: List[str],
@@ -139,10 +144,12 @@ def _extract_verses(
         val = row.get(col)
         if isinstance(val, str):
             val = val.strip()
-        if val:
-            verses.append(val)
+        if val and val != '-':
+            verses.append(_unescape_newlines(val))
 
-    base_row = {k: v for k, v in row.items() if not k.startswith(verse_prefix)}
+    base_row = {
+        k: _unescape_newlines(v) for k, v in row.items() if not k.startswith(verse_prefix)
+    }
     return base_row, verses
 
 

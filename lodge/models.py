@@ -61,7 +61,7 @@ class Hymn(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["hymn_number"]
+        ordering = ["-hymn_number"]
         constraints = [
             models.UniqueConstraint(
                 fields=["hymn_number"],
@@ -70,4 +70,4 @@ class Hymn(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.hymn_number} — {self.hymn_title}"
+        return f"#{self.hymn_number} — {self.hymn_title}"
