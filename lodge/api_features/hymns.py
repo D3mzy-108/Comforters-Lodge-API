@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..utils import parse_tsv_bytes
-from ..schemas import HymnOut
+from ..schemas import GroupedHymnOut, HymnOut
 from ..models import Hymn
 
 from fastapi import File, Form, HTTPException, UploadFile, Query
@@ -53,14 +53,14 @@ def _hymns_list(page: int) -> Dict[str, Any]:
     }
 
 
-def _grouped_hymn_list() -> List[List[HymnOut]]:
+def _grouped_hymn_list() -> List[GroupedHymnOut]:
     """
     Returns all hymns grouped into chunks of 100 (for accordion UI).
     """
     CHUNK_SIZE = 100
     hymns = list(Hymn.objects.order_by("hymn_number"))
 
-    grouped: List[List[HymnOut]] = []
+    grouped: List[GroupedHymnOut] = []
     for i in range(0, len(hymns), CHUNK_SIZE):
         grouped.append({
             'group': '{}-{}'.format(

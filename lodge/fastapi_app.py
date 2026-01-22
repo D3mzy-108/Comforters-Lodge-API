@@ -14,7 +14,7 @@ from lodge.api_features.devotionals import (
 from lodge.api_features.hymns import _create_hymn, _delete_hymn, _edit_hymn, _get_hymn, _grouped_hymn_list, _hymns_list
 from lodge.api_features.lessons import (
     _create_post, _daily_lesson_list, _delete_post, _edit_post, _get_post, _list_posts)
-from lodge.schemas import DailyPostOut, DailyDevotionOut, HymnOut
+from lodge.schemas import DailyPostOut, DailyDevotionOut, GroupedHymnOut, HymnOut
 django.setup()
 
 
@@ -209,8 +209,8 @@ def hymns_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
     return _hymns_list(page)
 
 
-@api.get("/hymns/grouped", response_model=List[List[HymnOut]])
-def grouped_hymn_list() -> List[List[HymnOut]]:
+@api.get("/hymns/grouped", response_model=List[GroupedHymnOut])
+def grouped_hymn_list() -> List[GroupedHymnOut]:
     return _grouped_hymn_list()
 
 

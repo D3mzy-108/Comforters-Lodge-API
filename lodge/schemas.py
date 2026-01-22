@@ -35,3 +35,8 @@ class HymnOut(BaseModel):
     chorus_title: str
     chorus: str
     verses: list[str]
+
+
+class GroupedHymnOut(BaseModel):
+    group: str
+    hymns: list[HymnOut]
