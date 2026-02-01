@@ -62,11 +62,14 @@ def _grouped_hymn_list() -> List[GroupedHymnOut]:
 
     grouped: List[GroupedHymnOut] = []
     for i in range(0, len(hymns), CHUNK_SIZE):
+        if i + CHUNK_SIZE < len(hymns):
+            group_end = hymns[i + CHUNK_SIZE - 1].hymn_number
+        else:
+            group_end = hymns[len(hymns) - 1].hymn_number
         grouped.append({
             'group': '{}-{}'.format(
                 hymns[i].hymn_number,
-                hymns[i + CHUNK_SIZE - 1].hymn_number if i +
-                CHUNK_SIZE < len(hymns) else hymns[i].hymn_number
+                group_end
             ),
             'hymns': [hymn_to_out(h) for h in hymns[i:i + CHUNK_SIZE]]
         })
