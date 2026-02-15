@@ -21,6 +21,7 @@ class DailyDevotionOut(BaseModel):
     # cover_image_url: str
     citation: str
     verse_content: str
+    prayer: str
     date_posted: date
 
 

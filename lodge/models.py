@@ -24,9 +24,10 @@ class DailyPost(models.Model):
 
 
 class DailyDevotion(models.Model):
-    # cover_image = models.ImageField(upload_to="devotions/")
-    citation = models.CharField(max_length=200)  # "Sitation/Bible verse"
+    citation = models.CharField(max_length=200)
     verse_content = models.TextField()
+    prayer = models.TextField(
+        default="Take a quiet moment here. Let this verse guide your own words before the Lord. Speak from your heart.")
     date_posted = models.DateField(default=timezone.localdate)
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -162,6 +162,7 @@ async def create_devotion(
     # SINGLE DEVOTION FIELDS (multipart form fields)
     citation: Optional[str] = Form(default=None),
     verse_content: Optional[str] = Form(default=None),
+    prayer: Optional[str] = Form(default=None),
     date_posted: Optional[date] = Form(default=None),
 
     # BULK TSV UPLOAD (also multipart)
@@ -170,6 +171,7 @@ async def create_devotion(
     return await _create_devotion(
         citation=citation,
         verse_content=verse_content,
+        prayer=prayer,
         date_posted=date_posted,
         tsv_file=tsv_file,
     )
@@ -180,10 +182,12 @@ def edit_devotion(
     devotion_id: int,
     # SINGLE DEVOTION FIELDS (multipart form fields)
     citation: Optional[str] = Form(default=None),
+    prayer: Optional[str] = Form(default=None),
     verse_content: Optional[str] = Form(default=None),
 ):
     update_data = {
         "citation": citation,
+        'prayer': prayer,
         "verse_content": verse_content,
     }
 

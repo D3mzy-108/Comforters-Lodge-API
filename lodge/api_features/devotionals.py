@@ -33,6 +33,7 @@ def devotion_to_out(d: DailyDevotion) -> DailyDevotionOut:
         # cover_image_url=url,
         citation=d.citation,
         verse_content=d.verse_content,
+        prayer=d.prayer,
         date_posted=d.date_posted,
     )
 
@@ -114,6 +115,7 @@ async def _create_devotion(
     # SINGLE DEVOTION FIELDS (multipart form fields)
     citation: Optional[str] = Form(default=None),
     verse_content: Optional[str] = Form(default=None),
+    prayer: Optional[str] = Form(default=None),
     date_posted: Optional[date] = Form(default=None),
 
     # BULK TSV UPLOAD (also multipart)
@@ -153,6 +155,7 @@ async def _create_devotion(
                         DailyDevotion.objects.create(
                             citation=r["citation"].strip(),
                             verse_content=r["verse_content"].strip(),
+                            prayer=r['prayer'].strip(),
                             # already parsed to date
                             date_posted=r["date_posted"],
                         )
@@ -184,6 +187,7 @@ async def _create_devotion(
         return DailyDevotion.objects.create(
             citation=citation.strip(),
             verse_content=verse_content.strip(),
+            prayer=prayer,
             date_posted=date_posted or timezone.localdate(),
         )
 
