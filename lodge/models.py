@@ -72,3 +72,37 @@ class Hymn(models.Model):
 
     def __str__(self) -> str:
         return f"#{self.hymn_number} — {self.hymn_title}"
+
+
+class PrayerCategory(models.Model):
+    title = models.CharField(
+        max_length=255, help_text="Title of the prayer type")
+    subtitle = models.CharField(
+        max_length=255, help_text="Subtitle or description of the prayer type")
+    color_code = models.CharField(
+        max_length=255, help_text="Color code for the prayer type")
+
+    class Meta:
+        ordering = ["title"]
+        verbose_name = 'PrayerCategory'
+        verbose_name_plural = 'PrayerCategories'
+
+    def __str__(self):
+        return self.title
+
+
+class Prayer(models.Model):
+    type = models.ForeignKey(
+        PrayerCategory, on_delete=models.CASCADE, related_name="prayers")
+    sub_type = models.CharField(
+        max_length=100, help_text="Hymn classification or category")
+    prayer = models.TextField(help_text="Text of the prayer")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["type__title", "sub_type"]
+
+    def __str__(self) -> str:
+        return f"{self.type} — {self.prayer[:30]}..."

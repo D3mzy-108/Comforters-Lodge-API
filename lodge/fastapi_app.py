@@ -14,7 +14,8 @@ from lodge.api_features.devotionals import (
 from lodge.api_features.hymns import _create_hymn, _delete_hymn, _edit_hymn, _get_hymn, _grouped_hymn_list, _hymns_list
 from lodge.api_features.lessons import (
     _create_post, _daily_lesson_list, _delete_post, _edit_post, _get_post, _list_posts)
-from lodge.schemas import DailyPostOut, DailyDevotionOut, GroupedHymnOut, HymnOut
+from lodge.api_features.prayers import _create_category, _create_prayer, _delete_category, _delete_prayer, _get_categories, _get_category, _get_prayer, _get_prayers, _update_category, _update_prayer
+from lodge.schemas import DailyPostOut, DailyDevotionOut, GroupedHymnOut, HymnOut, PrayerCategoryCreate, PrayerCategoryResponse, PrayerCategoryUpdate, PrayerCreate, PrayerResponse, PrayerUpdate
 django.setup()
 
 
@@ -293,3 +294,88 @@ def edit_hymn(
             status_code=400, detail="No fields provided to update.")
 
     return _edit_hymn(hymn_id=hymn_id, **update_data)
+
+
+# -----------------------------
+# PRAYER CATEGORY ENDPOINTS
+# -----------------------------
+@api.post("/prayers/categories/", response_model=PrayerCategoryResponse)
+def create_category_endpoint(category: PrayerCategoryCreate):
+    return _create_category(category=category)
+
+
+@api.get("/prayers/categories/", response_model=List[PrayerCategoryResponse])
+def read_categories_endpoint(skip: int = 0, limit: int = 100):
+    return _get_categories(skip=skip, limit=limit)
+
+
+@api.get("/prayers/categories/{category_id}", response_model=PrayerCategoryResponse)
+def read_category_endpoint(category_id: int):
+    db_category = _get_category(category_id=category_id)
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return db_category
+
+
+@api.put("/prayers/categories/{category_id}", response_model=PrayerCategoryResponse)
+def update_category_endpoint(category_id: int, category: PrayerCategoryUpdate):
+    db_category = _update_category(category_id=category_id, category=category)
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return db_category
+
+
+@api.delete("/prayers/categories/{category_id}")
+def delete_category_endpoint(category_id: int):
+    db_category = _delete_category(category_id=category_id)
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return None
+
+
+# -----------------------------
+# PRAYERS ENDPOINTS
+# -----------------------------
+
+@api.post("/prayers/", response_model=PrayerResponse)
+def create_prayer_endpoint(prayer: PrayerCreate):
+    db_category = _get_category(category_id=prayer.type_id)
+    if not db_category:
+        raise HTTPException(
+            status_code=400, detail="PrayerCategory does not exist")
+    return _create_prayer(prayer=prayer)
+
+
+@api.get("/prayers/", response_model=List[PrayerResponse])
+def read_prayers_endpoint(skip: int = 0, limit: int = 100):
+    return _get_prayers(type_id=None, skip=skip, limit=limit)
+
+
+@api.get("/prayers/{prayer_id}", response_model=PrayerResponse)
+def read_prayer_endpoint(prayer_id: int):
+    db_prayer = _get_prayer(prayer_id=prayer_id)
+    if db_prayer is None:
+        raise HTTPException(status_code=404, detail="Prayer not found")
+    return db_prayer
+
+
+@api.put("/prayers/{prayer_id}", response_model=PrayerResponse)
+def update_prayer_endpoint(prayer_id: int, prayer: PrayerUpdate):
+    if prayer.type_id is not None:
+        db_category = _get_category(category_id=prayer.type_id)
+        if not db_category:
+            raise HTTPException(
+                status_code=400, detail="PrayerCategory does not exist")
+
+    db_prayer = _update_prayer(prayer_id=prayer_id, prayer=prayer)
+    if db_prayer is None:
+        raise HTTPException(status_code=404, detail="Prayer not found")
+    return db_prayer
+
+
+@api.delete("/prayers/{prayer_id}")
+def delete_prayer_endpoint(prayer_id: int):
+    db_prayer = _delete_prayer(prayer_id=prayer_id)
+    if db_prayer is None:
+        raise HTTPException(status_code=404, detail="Prayer not found")
+    return None

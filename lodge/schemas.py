@@ -1,5 +1,6 @@
-from datetime import date
-from pydantic import BaseModel
+from datetime import date, datetime
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DailyPostOut(BaseModel):
@@ -41,3 +42,52 @@ class HymnOut(BaseModel):
 class GroupedHymnOut(BaseModel):
     group: str
     hymns: list[HymnOut]
+
+
+class PrayerCategoryBase(BaseModel):
+    title: str = Field(..., max_length=255,
+                       description="Title of the prayer type")
+    subtitle: str = Field(..., max_length=255,
+                          description="Subtitle or description")
+    color_code: str = Field(..., max_length=255,
+                            description="Color code for the prayer type")
+
+
+class PrayerCategoryCreate(PrayerCategoryBase):
+    pass
+
+
+class PrayerCategoryUpdate(PrayerCategoryBase):
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
+    color_code: Optional[str] = None
+
+
+class PrayerCategoryResponse(PrayerCategoryBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PrayerBase(BaseModel):
+    sub_type: str
+    prayer: str
+    type_id: int
+
+
+class PrayerCreate(PrayerBase):
+    pass
+
+
+class PrayerUpdate(BaseModel):
+    sub_type: Optional[str] = None
+    prayer: Optional[str] = None
+    type_id: Optional[int] = None
+
+
+class PrayerResponse(PrayerBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
