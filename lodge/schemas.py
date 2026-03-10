@@ -55,9 +55,9 @@ class PrayerCategoryBase(BaseModel):
 
 
 class PrayerCategoryCreate(PrayerCategoryBase):
-    title: str = Form(default='')
-    subtitle: str = Form(default='')
-    color_code: str = Form(default='')
+    title: str
+    subtitle: str
+    color_code: str
 
 
 class PrayerCategoryUpdate(PrayerCategoryBase):
@@ -79,9 +79,9 @@ class PrayerBase(BaseModel):
 
 
 class PrayerCreate(PrayerBase):
-    sub_type: str = Form(default='')
-    prayer: str = Form(default='')
-    type_id: int = Form(default=0)
+    sub_type: str
+    prayer: str
+    type_id: int
 
 
 class PrayerUpdate(BaseModel):

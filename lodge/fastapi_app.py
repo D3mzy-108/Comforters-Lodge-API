@@ -300,7 +300,7 @@ def edit_hymn(
 # PRAYER CATEGORY ENDPOINTS
 # -----------------------------
 @api.post("/prayers/categories/", response_model=PrayerCategoryResponse)
-def create_category_endpoint(category: PrayerCategoryCreate = Depends()):
+def create_category_endpoint(category: PrayerCategoryCreate):
     return _create_category(category=category)
 
 
