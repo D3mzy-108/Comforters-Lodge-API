@@ -300,7 +300,7 @@ def edit_hymn(
 # PRAYER CATEGORY ENDPOINTS
 # -----------------------------
 @api.post("/prayers/categories/", response_model=PrayerCategoryResponse)
-def create_category_endpoint(category: PrayerCategoryCreate):
+def create_category_endpoint(category: PrayerCategoryCreate = Depends()):
     return _create_category(category=category)
 
 
@@ -338,7 +338,7 @@ def delete_category_endpoint(category_id: int):
 # -----------------------------
 
 @api.post("/prayers/", response_model=PrayerResponse)
-def create_prayer_endpoint(prayer: PrayerCreate):
+def create_prayer_endpoint(prayer: PrayerCreate = Depends()):
     db_category = _get_category(category_id=prayer.type_id)
     if not db_category:
         raise HTTPException(
