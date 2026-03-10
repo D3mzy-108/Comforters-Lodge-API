@@ -14,7 +14,10 @@ def _get_categories(skip: int = 0, limit: int = 100):
 
 
 def _create_category(category: PrayerCategoryCreate):
-    db_category = PrayerCategory(**category.model_dump())
+    db_category = PrayerCategory()
+    db_category.title = category.title
+    db_category.subtitle = category.subtitle
+    db_category.color_code = category.color_code
     db_category.save()
     return db_category
 
