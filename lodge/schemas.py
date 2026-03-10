@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
+from fastapi import Form
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -54,7 +55,9 @@ class PrayerCategoryBase(BaseModel):
 
 
 class PrayerCategoryCreate(PrayerCategoryBase):
-    pass
+    title: str = Form(default='')
+    subtitle: str = Form(default='')
+    color_code: str = Form(default='')
 
 
 class PrayerCategoryUpdate(PrayerCategoryBase):
@@ -76,7 +79,9 @@ class PrayerBase(BaseModel):
 
 
 class PrayerCreate(PrayerBase):
-    pass
+    sub_type: str = Form(default='')
+    prayer: str = Form(default='')
+    type_id: int = Form(default=0)
 
 
 class PrayerUpdate(BaseModel):
