@@ -347,8 +347,8 @@ def create_prayer_endpoint(prayer: PrayerCreate):
 
 
 @api.get("/prayers/", response_model=List[PrayerResponse])
-def read_prayers_endpoint(skip: int = 0, limit: int = 100):
-    return _get_prayers(type_id=None, skip=skip, limit=limit)
+def read_prayers_endpoint(type_id: int, skip: int = 0, limit: int = 100):
+    return _get_prayers(type_id=type_id, skip=skip, limit=limit)
 
 
 @api.get("/prayers/{prayer_id}", response_model=PrayerResponse)
