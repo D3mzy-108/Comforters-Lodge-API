@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import DailyPost, DailyDevotion, Hymn, Prayer
+from .models import DailyPost, DailyDevotion, Hymn, Hymnal, Prayer
+
+
+@admin.register(Hymnal)
+class HymnalAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "color_code", "created_at")
+    search_fields = ("name",)
 
 
 @admin.register(DailyPost)
@@ -16,8 +22,9 @@ class DailyDevotionAdmin(admin.ModelAdmin):
 
 @admin.register(Hymn)
 class HymnAdmin(admin.ModelAdmin):
-    list_display = ("id", "hymn_number", "hymn_title",
+    list_display = ("id", "hymnal", "hymn_number", "hymn_title",
                     "classification", "created_at")
+    list_filter = ("hymnal",)
     search_fields = ("hymn_title", "classification", "tune_ref", "scripture")
 
 

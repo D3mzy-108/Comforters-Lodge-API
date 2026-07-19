@@ -27,8 +27,32 @@ class DailyDevotionOut(BaseModel):
     date_posted: date
 
 
+class HymnalBase(BaseModel):
+    name: str = Field(..., max_length=255,
+                      description="Name of the hymnal / songbook")
+    color_code: str = Field(
+        "", max_length=255, description="Accent colour for the hymnal")
+
+
+class HymnalCreate(HymnalBase):
+    name: Optional[str] = Form(default=None)
+    color_code: Optional[str] = Form(default=None)
+
+
+class HymnalUpdate(BaseModel):
+    name: Optional[str] = None
+    color_code: Optional[str] = None
+
+
+class HymnalResponse(HymnalBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class HymnOut(BaseModel):
     id: int
+    hymnal_id: int
     hymn_number: int
     hymn_title: str
     classification: str

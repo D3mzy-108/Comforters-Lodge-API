@@ -3,6 +3,7 @@ from __future__ import annotations
 from ..utils import parse_tsv_bytes
 from ..schemas import GroupedHymnOut, HymnOut
 from ..models import Hymn
+from .hymnals import resolve_hymnal
 
 from fastapi import File, Form, HTTPException, UploadFile, Query
 from django.shortcuts import get_object_or_404
@@ -20,6 +21,7 @@ def hymn_to_out(h: Hymn) -> HymnOut:
     """Convert a Hymn model instance to HymnOut."""
     return HymnOut(
         id=h.id,
+        hymnal_id=h.hymnal_id,
         hymn_number=h.hymn_number,
         hymn_title=h.hymn_title,
         classification=h.classification,
@@ -36,15 +38,19 @@ def hymn_to_out(h: Hymn) -> HymnOut:
 # Endpoints: Hymns (SYNC)
 # -------------------------
 
-def _hymns_list(page: int) -> Dict[str, Any]:
+def _hymns_list(page: int, hymnal_id: Optional[int] = None) -> Dict[str, Any]:
     """
-    Paginated hymn list (30 per page).
+    Paginated hymn list (30 per page). Optionally scoped to one hymnal.
     """
     PAGE_SIZE = 30
     offset = (page - 1) * PAGE_SIZE
 
-    total = Hymn.objects.count()
-    hymns = Hymn.objects.order_by("-hymn_number")[offset: offset + PAGE_SIZE]
+    qs = Hymn.objects.select_related("hymnal")
+    if hymnal_id is not None:
+        qs = qs.filter(hymnal_id=hymnal_id)
+
+    total = qs.count()
+    hymns = qs.order_by("-hymn_number")[offset: offset + PAGE_SIZE]
 
     return {
         "hymns": [hymn_to_out(h) for h in hymns],
@@ -53,12 +59,16 @@ def _hymns_list(page: int) -> Dict[str, Any]:
     }
 
 
-def _grouped_hymn_list() -> List[GroupedHymnOut]:
+def _grouped_hymn_list(hymnal_id: Optional[int] = None) -> List[GroupedHymnOut]:
     """
-    Returns all hymns grouped into chunks of 100 (for accordion UI).
+    Returns hymns grouped into chunks of 100 (for accordion UI).
+    Optionally scoped to one hymnal.
     """
     CHUNK_SIZE = 100
-    hymns = list(Hymn.objects.order_by("hymn_number"))
+    qs = Hymn.objects.select_related("hymnal").order_by("hymn_number")
+    if hymnal_id is not None:
+        qs = qs.filter(hymnal_id=hymnal_id)
+    hymns = list(qs)
 
     grouped: List[GroupedHymnOut] = []
     for i in range(0, len(hymns), CHUNK_SIZE):
@@ -109,6 +119,7 @@ async def _create_hymn(
     chorus_title: Optional[str] = Form(default=None),
     chorus: Optional[str] = Form(default=None),
     verses: Optional[List[str]] = Form(default=None),
+    hymnal_id: Optional[int] = Form(default=None),
 
     # BULK TSV UPLOAD
     tsv_file: Optional[UploadFile] = File(default=None),
@@ -136,6 +147,7 @@ async def _create_hymn(
             raise HTTPException(status_code=400, detail=str(e))
 
         def _bulk_create() -> List[Hymn]:
+            hymnal = resolve_hymnal(hymnal_id)
             created: List[Hymn] = []
             with transaction.atomic():
                 for item in items:
@@ -144,6 +156,7 @@ async def _create_hymn(
 
                     created.append(
                         Hymn.objects.create(
+                            hymnal=hymnal,
                             hymn_number=int(hymn_data["hymn_number"]),
                             hymn_title=hymn_data["hymn_title"].strip(),
                             classification=hymn_data["classification"].strip(),
@@ -183,7 +196,9 @@ async def _create_hymn(
         )
 
     def _create_single() -> Hymn:
+        hymnal = resolve_hymnal(hymnal_id)
         return Hymn.objects.create(
+            hymnal=hymnal,
             hymn_number=int(hymn_number),
             hymn_title=hymn_title.strip(),
             classification=classification.strip(),

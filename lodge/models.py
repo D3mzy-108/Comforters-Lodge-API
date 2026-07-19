@@ -39,7 +39,30 @@ class DailyDevotion(models.Model):
         return f"DailyDevotion({self.id}) {self.date_posted}"
 
 
+class Hymnal(models.Model):
+    """A hymnal / songbook that owns a set of hymns."""
+    name = models.CharField(
+        max_length=255, unique=True, help_text="Name of the hymnal / songbook")
+    color_code = models.CharField(
+        max_length=255, blank=True, help_text="Accent colour for the hymnal")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Hymn(models.Model):
+    hymnal = models.ForeignKey(
+        Hymnal,
+        on_delete=models.PROTECT,
+        related_name="hymns",
+        help_text="The hymnal this hymn belongs to",
+    )
     hymn_number = models.PositiveIntegerField(
         help_text="Numeric identifier for the hymn")
     hymn_title = models.CharField(
@@ -65,8 +88,8 @@ class Hymn(models.Model):
         ordering = ["-hymn_number"]
         constraints = [
             models.UniqueConstraint(
-                fields=["hymn_number"],
-                name="unique_hymn_number"
+                fields=["hymnal", "hymn_number"],
+                name="unique_hymn_number_per_hymnal"
             )
         ]
 

@@ -12,10 +12,11 @@ import django
 from lodge.api_features.devotionals import (
     _create_devotion, _daily_devotions, _delete_devotion, _edit_devotion, _get_devotion, _list_devotions)
 from lodge.api_features.hymns import _create_hymn, _delete_hymn, _edit_hymn, _get_hymn, _grouped_hymn_list, _hymns_list
+from lodge.api_features.hymnals import _create_hymnal, _delete_hymnal, _get_hymnal, _get_hymnals, _update_hymnal
 from lodge.api_features.lessons import (
     _create_post, _daily_lesson_list, _delete_post, _edit_post, _get_post, _list_posts)
 from lodge.api_features.prayers import _create_category, _create_prayer, _delete_category, _delete_prayer, _get_categories, _get_category, _get_prayer, _get_prayers, _update_category, _update_prayer
-from lodge.schemas import DailyPostOut, DailyDevotionOut, GroupedHymnOut, HymnOut, PrayerCategoryCreate, PrayerCategoryResponse, PrayerCategoryUpdate, PrayerCreate, PrayerResponse, PrayerUpdate
+from lodge.schemas import DailyPostOut, DailyDevotionOut, GroupedHymnOut, HymnalCreate, HymnalResponse, HymnalUpdate, HymnOut, PrayerCategoryCreate, PrayerCategoryResponse, PrayerCategoryUpdate, PrayerCreate, PrayerResponse, PrayerUpdate
 django.setup()
 
 
@@ -210,13 +211,18 @@ def edit_devotion(
 
 
 @api.get("/hymns", response_model=Dict[str, Any])
-def hymns_list(page: int = Query(1, ge=1)) -> Dict[str, Any]:
-    return _hymns_list(page)
+def hymns_list(
+    page: int = Query(1, ge=1),
+    hymnal_id: Optional[int] = Query(default=None),
+) -> Dict[str, Any]:
+    return _hymns_list(page, hymnal_id=hymnal_id)
 
 
 @api.get("/hymns/grouped", response_model=List[GroupedHymnOut])
-def grouped_hymn_list() -> List[GroupedHymnOut]:
-    return _grouped_hymn_list()
+def grouped_hymn_list(
+    hymnal_id: Optional[int] = Query(default=None),
+) -> List[GroupedHymnOut]:
+    return _grouped_hymn_list(hymnal_id=hymnal_id)
 
 
 @api.get("/hymns/{hymn_id}", response_model=HymnOut)
@@ -241,6 +247,7 @@ async def create_hymn(
     chorus_title: Optional[str] = Form(default=None),
     chorus: Optional[str] = Form(default=None),
     verses: Optional[List[str]] = Form(default=None),
+    hymnal_id: Optional[int] = Form(default=None),
 
     # BULK TSV UPLOAD
     tsv_file: Optional[UploadFile] = File(default=None),
@@ -255,6 +262,7 @@ async def create_hymn(
         chorus_title=chorus_title,
         chorus=chorus,
         verses=verses,
+        hymnal_id=hymnal_id,
         tsv_file=tsv_file,
     )
 
@@ -273,7 +281,11 @@ def edit_hymn(
     chorus_title: Optional[str] = Form(default=None),
     chorus: Optional[str] = Form(default=None),
     verses: Optional[List[str]] = Form(default=None),
+    hymnal_id: Optional[int] = Form(default=None),
 ):
+    if hymnal_id is not None and _get_hymnal(hymnal_id) is None:
+        raise HTTPException(status_code=400, detail="Hymnal does not exist.")
+
     update_data = {
         "hymn_number": hymn_number,
         "hymn_title": hymn_title,
@@ -284,6 +296,7 @@ def edit_hymn(
         "chorus_title": chorus_title,
         "chorus": chorus,
         "verses": verses,
+        "hymnal_id": hymnal_id,
     }
 
     # keep only fields actually provided (None means “don’t change”)
@@ -294,6 +307,47 @@ def edit_hymn(
             status_code=400, detail="No fields provided to update.")
 
     return _edit_hymn(hymn_id=hymn_id, **update_data)
+
+
+# -----------------------------
+# HYMNAL ENDPOINTS
+# -----------------------------
+@api.get("/hymnals", response_model=List[HymnalResponse])
+def read_hymnals_endpoint(skip: int = 0, limit: int = 100):
+    return _get_hymnals(skip=skip, limit=limit)
+
+
+@api.post("/hymnals", response_model=HymnalResponse)
+def create_hymnal_endpoint(
+    name: Optional[str] = Form(default=None),
+    color_code: Optional[str] = Form(default=None),
+):
+    hymnal = HymnalCreate(name=name, color_code=color_code)
+    return _create_hymnal(hymnal=hymnal)
+
+
+@api.get("/hymnals/{hymnal_id}", response_model=HymnalResponse)
+def read_hymnal_endpoint(hymnal_id: int):
+    db_hymnal = _get_hymnal(hymnal_id=hymnal_id)
+    if db_hymnal is None:
+        raise HTTPException(status_code=404, detail="Hymnal not found")
+    return db_hymnal
+
+
+@api.put("/hymnals/{hymnal_id}", response_model=HymnalResponse)
+def update_hymnal_endpoint(hymnal_id: int, hymnal: HymnalUpdate):
+    db_hymnal = _update_hymnal(hymnal_id=hymnal_id, hymnal=hymnal)
+    if db_hymnal is None:
+        raise HTTPException(status_code=404, detail="Hymnal not found")
+    return db_hymnal
+
+
+@api.delete("/hymnals/{hymnal_id}")
+def delete_hymnal_endpoint(hymnal_id: int):
+    result = _delete_hymnal(hymnal_id=hymnal_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Hymnal not found")
+    return None
 
 
 # -----------------------------
